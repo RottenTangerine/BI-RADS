@@ -64,6 +64,8 @@ class TumorDataset(Dataset):
 
         # convert features to vector
         feature_vector = []
+        feature_vector.append(label)
+
         feature_names = ['shape', 'margin', 'center_x', 'center_y', 'radius_a', 'radius_b',
                          'angel', 'density', 'edge_r', 'edge_num', 'shadow', 'spot_num']
         for i, feature in enumerate(features):
@@ -74,7 +76,7 @@ class TumorDataset(Dataset):
 
         feature_vector = torch.tensor(feature_vector)
 
-        return image, feature_vector, label
+        return image, feature_vector
 
 
 from torch.utils.data import DataLoader
@@ -92,10 +94,9 @@ if __name__ == '__main__':
     dataloader = DataLoader(dataset, batch_size=6, shuffle=True)
 
     data = next(iter(dataloader))
-    img, feature_vector, label = data
+    img, feature_vector = data
 
     print("Feature Vector: ", feature_vector)
-    print("Label: ", label)
 
     # 显示一张图像
     img = img[0].permute(1, 2, 0)
