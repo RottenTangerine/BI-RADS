@@ -9,7 +9,7 @@ def load_config():
     args.add_argument('--init_type', type=str, default='normal', help='init function')
     args.add_argument('--init_gain', type=float, default=0.02, help='init gain')
 
-    args.add_argument('--noise_features', type=int, default=100, help='size of the random feature')
+    args.add_argument('--noise_features', type=int, default=13, help='size of the random feature')
 
     # device
     args.add_argument('--cuda', type=bool, default=True, help='use cuda training')
