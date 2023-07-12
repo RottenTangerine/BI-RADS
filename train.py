@@ -9,6 +9,8 @@ import torch.nn as nn
 
 from model import discriminator, generator
 from model.utils import init_net
+from torchvision import transforms
+from data.dataset import TumorDataset
 
 import torchvision
 torch.set_printoptions(profile="full", linewidth=100)
@@ -19,6 +21,18 @@ args = load_config()
 train_id = int(time.time())
 resume_epoch = 0
 print(f'Training ID: {train_id}')
+
+
+# dataset
+transform = transforms.Compose([
+    transforms.Resize((256, 256)),
+    transforms.ToTensor(),
+])
+dataset = TumorDataset("./data/ellipse_malignant", "./data/ellipse_malignant_annotation", transform=transform)
+
+# dataloader
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
+
 
 
 device = 'cuda' if torch.cuda.is_available() and args.cuda else 'cpu'
@@ -75,16 +89,11 @@ for epoch in range(resume_epoch + 1, args.epochs):
     epoch_start_time = time.time()
     print(f'{"*" * 20} Start epoch {epoch}/{args.epochs} {"*" * 20}')
 
-    for i in range(args.batch_num):
+    for i, (real_img, feature_vector) in enumerate(dataloader):
+        feature_vector = feature_vector.to(device)
+        real_img = real_img.to(device)
 
-        z = torch.randn((args.batch_size, args.noise_features, 1, 1)).to(device)
-
-        # both of real images and fake images are generated
-        # real images are generated from algorithm
-        # fake images are generated from generator
-
-        real_img = ""# versa work
-        fake_img = G(z)
+        fake_img = G(feature_vector)
 
         # Generator back-prop
         optimizer_G.zero_grad()
@@ -92,7 +101,7 @@ for epoch in range(resume_epoch + 1, args.epochs):
         pred_fake = D(fake_img)
         target_real = (torch.ones(pred_fake.shape) * 0.95).to(device)
         target_fake = (torch.ones(pred_fake.shape) * 0.05).to(device)
-        loss_G = criterion_GAN(pred_fake, target_real) + pixel_loss(fake_img, real_img)
+        loss_G = criterion_GAN(pred_fake, target_real) + pixel_loss(fake_img, real_img) * 0.2
 
         loss_G.backward()
         optimizer_G.step()
@@ -138,7 +147,7 @@ for epoch in range(resume_epoch + 1, args.epochs):
     torch.save({'epoch': epoch,
                 'G_state_dict': G.state_dict(),
                 'D_state_dict': D.state_dict(),
-                }, f'checkpoint/{train_id}_{epoch:03d}.pt')
+                }, f'checkpoint/{train_id}_{epoch:03d}.ckpt')
 
 # save model
 os.makedirs('trained_model', exist_ok=True)
@@ -146,4 +155,4 @@ try:
     torch.save(G.state_dict(), f'./trained_model/G_{train_id}.pth')
     print(f'Successfully saves the model ./trained_model/G_{train_id}.pth')
 except:
-    print('Fail to save the model, this project will automatically use the latest checkpoint to recover the model')
+    print('Fail to save the model, Project will automatically use the latest checkpoint to recover the model')
