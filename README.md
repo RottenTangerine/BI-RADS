@@ -1,13 +1,13 @@
 # BI-RADS
 Feature separation based on BIRADS
 
-![BI-RADS overview](Ref/overview.png)
+![BI-RADS overview](Assets/overview.png)
 
 ## Shape
-![Shape](Ref/shape.png)
+![Shape](Assets/shape.png)
 
 ## Margins
-![Margins](Ref/margin.png)
+![Margins](Assets/margin.png)
 
 ## Density
-![Density](Ref/density.png)
+![Density](Assets/density.png)
