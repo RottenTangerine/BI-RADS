@@ -3,6 +3,7 @@ import torch.nn as nn
 class Generator(nn.Module):
     def __init__(self, in_channel, out_channel=3):
         super(Generator, self).__init__()
+
         self.conv = nn.Sequential(
             # in: latent_size x 1 x 1
             nn.ConvTranspose2d(in_channel, 512, kernel_size=4, stride=1, padding=0, bias=False),
@@ -30,7 +31,7 @@ class Generator(nn.Module):
             # out: 64 x 32 x 32
 
             nn.ConvTranspose2d(64, 16, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(64),
+            nn.BatchNorm2d(16),
             nn.ReLU(True),
             # out: 16 x 64 x 64
 
@@ -40,4 +41,5 @@ class Generator(nn.Module):
         )
 
     def forward(self, x):
+        x = x.view(*x.shape, 1, 1)
         return self.conv(x)
