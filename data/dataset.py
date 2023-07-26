@@ -5,6 +5,8 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 
+torch.set_printoptions(threshold=80, linewidth=80)
+
 
 def parse_xml(xml_path):
     tree = ET.parse(xml_path)
@@ -36,15 +38,12 @@ class TumorDataset(Dataset):
         self.feature_dict = {
             "shape": {
                 "ellipse": 0,
-                # add more shapes here if exist
             },
             "margin": {
                 "Microlobulated": 0,
-                # add more margin types here if exist
             },
             "shadow": {
                 "black": 0,
-                # add more shadow types here if exist
             }
         }
 
@@ -88,6 +87,7 @@ if __name__ == '__main__':
     transform = transforms.Compose([
         transforms.Resize((256, 256)),
         transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
 
     dataset = TumorDataset("./ellipse_malignant", "./ellipse_malignant_annotation", transform=transform)
@@ -99,6 +99,8 @@ if __name__ == '__main__':
     print("Feature Vector: ", feature_vector)
 
     # 显示一张图像
+    print(img.shape)
     img = img[0].permute(1, 2, 0)
+    print(img)
     plt.imshow(img)
     plt.show()

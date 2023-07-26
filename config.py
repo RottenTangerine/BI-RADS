@@ -18,7 +18,7 @@ def load_config():
     args.add_argument('--batch_size', type=int, default=8, help='batch size number')
     args.add_argument('--lr_g', type=float, default=2e-4, help='learning rate of generator')
     args.add_argument('--lr_d', type=float, default=2e-4, help='learning rate of discriminator')
-    args.add_argument('--epochs', type=int, default=30, help='number of epochs')
+    args.add_argument('--epochs', type=int, default=100, help='number of epochs')
     args.add_argument('--output_channel', type=int, default=3, help='size of the output image channel')
 
     # print option

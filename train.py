@@ -100,6 +100,7 @@ for epoch in range(resume_epoch + 1, args.epochs):
 
         pred_fake = D(fake_img)
         target_real = (torch.ones(pred_fake.shape) * 0.95).to(device)
+
         target_fake = (torch.ones(pred_fake.shape) * 0.05).to(device)
         loss_G = criterion_GAN(pred_fake, target_real) + pixel_loss(fake_img, real_img) * 0.2
 
