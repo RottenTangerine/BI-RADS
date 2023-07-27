@@ -30,12 +30,13 @@ with st.sidebar:
 
     angel = st.slider('angel', min_value=0.0, max_value=100.0, step=0.01)
     density = st.slider('density', min_value=0.0, max_value=10.0, step=0.01)
-    edge_r = st.slider('edge_r', min_value=0.0, max_value=10.0, step=0.01)
+    edge_r = st.slider('edge_a', min_value=0.0, max_value=10.0, step=0.01)
+    edge_r = st.slider('edge_b', min_value=0.0, max_value=10.0, step=0.01)
     edge_num = st.slider('edge_num', min_value=0.0, max_value=10.0, step=0.01)
 
     shadow = st.select_slider(
         'Select shadow type',
-        options=['black', 'write']
+        options=['black', 'white']
     )
     spot_num = st.slider('spot_num', min_value=0.0, max_value=10.0, step=0.01)
 
@@ -46,14 +47,16 @@ feature_dict = {
         'Malignant': 1
     },
     "shape": {
-        "ellipse": 0,
+        'round': 0,
+        'ellipse': 1,
+        'lobular': 2,
     },
     "margin": {
         "Microlobulated": 0,
     },
     "shadow": {
         "black": 0,
-        'write': 0,
+        'white': 0,
     }
 }
 

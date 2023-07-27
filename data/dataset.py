@@ -36,14 +36,23 @@ class TumorDataset(Dataset):
         self.imgs = os.listdir(img_dir)
 
         self.feature_dict = {
+
+            "tumor_type": {
+                'Benign': 0,
+                'Malignant': 1
+            },
             "shape": {
-                "ellipse": 0,
+                'round': 0,
+                'ellipse': 1,
+                'lobular': 2,
             },
             "margin": {
-                "Microlobulated": 0,
+                'Microlobulated': 0,
+                'Circumscribed': 1
             },
             "shadow": {
                 "black": 0,
+                'white': 0,
             }
         }
 
@@ -66,7 +75,7 @@ class TumorDataset(Dataset):
         feature_vector.append(label)
 
         feature_names = ['shape', 'margin', 'center_x', 'center_y', 'radius_a', 'radius_b',
-                         'angel', 'density', 'edge_r', 'edge_num', 'shadow', 'spot_num']
+                         'angel', 'density', 'edge_a', 'edge_b', 'edge_num', 'shadow', 'spot_num']
         for i, feature in enumerate(features):
             if feature_names[i] in self.feature_dict:
                 feature_vector.append(self.feature_dict[feature_names[i]][feature])
@@ -74,6 +83,8 @@ class TumorDataset(Dataset):
                 feature_vector.append(feature)
 
         feature_vector = torch.tensor(feature_vector)
+        feature_vector = feature_vector.view(feature_vector.shape[0], 1, 1)
+
 
         return image, feature_vector
 
@@ -82,6 +93,7 @@ from torch.utils.data import DataLoader
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
+    from utils import denormalize
     from config import load_config
 
     transform = transforms.Compose([
@@ -90,17 +102,18 @@ if __name__ == '__main__':
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
 
-    dataset = TumorDataset("./ellipse_malignant", "./ellipse_malignant_annotation", transform=transform)
+    dataset = TumorDataset("./dataset/img", "./dataset/xml", transform=transform)
     dataloader = DataLoader(dataset, batch_size=6, shuffle=True)
 
     data = next(iter(dataloader))
     img, feature_vector = data
 
-    print("Feature Vector: ", feature_vector)
+    # print("Feature Vector: ", feature_vector)
+    print(feature_vector.shape)
 
     # 显示一张图像
+    img = denormalize(img)
     print(img.shape)
     img = img[0].permute(1, 2, 0)
-    print(img)
     plt.imshow(img)
     plt.show()

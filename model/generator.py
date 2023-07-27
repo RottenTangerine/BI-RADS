@@ -2,51 +2,53 @@
 Based on DC-GAN
 https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
 """
+from model.basic_block import ResidualBlock
+import torch
 import torch.nn as nn
 
 class Generator(nn.Module):
-    def __init__(self, in_channel, out_channel=1):
+    def __init__(self, input_nc, output_nc, n_residual_blocks=9):
         super(Generator, self).__init__()
 
-        ngf = 64
+        # Initial convolution block
+        model = [   nn.ConvTranspose2d(input_nc, 128, 4, 1),
+                    nn.ReLU(inplace=True) ]
 
-        self.conv = nn.Sequential(
-            # in: latent_size x 1 x 1
-            nn.ConvTranspose2d(in_channel, ngf * 16, kernel_size=4, stride=1, padding=0, bias=False),
-            nn.BatchNorm2d(ngf * 16),
-            nn.ReLU(True),
-            # out: 1024 x 4 x 4
+        # Downsampling
+        in_features = 128
+        # out_features = in_features*2
+        # for _ in range(2):
+        #     model += [  nn.Conv2d(in_features, out_features, 3, stride=2, padding=1),
+        #                 nn.InstanceNorm2d(out_features),
+        #                 nn.ReLU(inplace=True) ]
+        #     in_features = out_features
+        #     out_features = in_features*2
 
-            nn.ConvTranspose2d(ngf * 16, ngf * 8, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(ngf * 8),
-            nn.ReLU(True),
-            # out: 512 x 8 x 8
+        # Residual blocks
+        for _ in range(n_residual_blocks):
+            model += [ResidualBlock(in_features)]
 
-            nn.ConvTranspose2d(ngf * 8, ngf * 8, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(ngf * 8),
-            nn.ReLU(True),
-            # out: 512 x 16 x 16
+        # Upsampling
+        out_features = in_features//2
+        for _ in range(6):
+            model += [  nn.ConvTranspose2d(in_features, out_features, 3, stride=2, padding=1, output_padding=1),
+                        nn.InstanceNorm2d(out_features),
+                        nn.ReLU(inplace=True) ]
+            in_features = out_features
+            out_features = in_features//2
 
-            nn.ConvTranspose2d(ngf * 8, ngf * 4, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(ngf * 4),
-            nn.ReLU(True),
-            # out: 256 x 32 x 32
+        # Output layer
+        model += [  nn.ReflectionPad2d(3),
+                    nn.Conv2d(in_features, output_nc, 7),
+                    nn.Tanh() ]
 
-            nn.ConvTranspose2d(ngf * 4, ngf * 2, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(ngf * 2),
-            nn.ReLU(True),
-            # out: 128 x 64 x 64
-
-            nn.ConvTranspose2d(ngf * 2, ngf, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(ngf),
-            nn.ReLU(True),
-            # out: 64 x 128 x 128
-
-            nn.ConvTranspose2d(ngf, 3, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.Tanh()
-            # out: 3 x 256 x 256
-        )
+        self.model = nn.Sequential(*model)
 
     def forward(self, x):
-        x = x.view(*x.shape, 1, 1)
-        return self.conv(x)
+        return self.model(x)
+
+if __name__ == '__main__':
+    G = Generator(13, 3)
+    tensor = torch.rand([6, 13, 1, 1])
+    out = G(tensor)
+    print(out.shape)
